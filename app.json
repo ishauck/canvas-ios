@@ -24,7 +24,6 @@
     },
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
@@ -35,14 +34,14 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.izzehaucc.canvasios"
+      "bundleIdentifier": "com.ishauck.canvasios"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.izzehaucc.canvasios"
+      "package": "com.ishauck.canvasios"
     },
     "extra": {
       "router": {},

@@ -1,14 +1,9 @@
 import { Stack } from 'expo-router';
 
-const isAuthenticated = false;
-
 export default function Layout() {
   return (
     <Stack>
       <Stack.Screen name="index" options={{ headerShown: false }} />
-      <Stack.Protected guard={isAuthenticated}>
-        <Stack.Screen name="app" />
-      </Stack.Protected>
     </Stack>
   );
 }

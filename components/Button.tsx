@@ -1,41 +1,94 @@
-import { forwardRef } from 'react';
-import { StyleSheet, Text, TouchableOpacity, TouchableOpacityProps, View } from 'react-native';
+import { CANVAS_RED, THEME } from "@/constants/color";
+import { Pressable, StyleSheet, useColorScheme, ViewStyle, StyleProp, AccessibilityProps } from "react-native";
+import { SquircleView } from "react-native-figma-squircle";
+import React, { useMemo } from "react";
+
+const VARIANTS = {
+    primary: (theme: any) => ({
+        backgroundColor: theme.button,
+    }),
+    // Add more variants as needed
+};
+
+type ButtonWrapperProps = Omit<React.ComponentProps<typeof SquircleView>, "squircleParams">;
+
+export function ButtonWrapper({ children, ...props }: ButtonWrapperProps) {
+    const colorScheme = useColorScheme();
+    const theme = THEME[colorScheme || 'light'];
+    return (
+        <SquircleView {...props} style={[styles.wrapper, { backgroundColor: theme.button }, props.style]} squircleParams={{
+            cornerRadius: 18,
+            cornerSmoothing: 1,
+        }}>
+            {children}
+        </SquircleView>
+    );
+}
 
 type ButtonProps = {
-  title?: string;
-} & TouchableOpacityProps;
+    children: React.ReactNode;
+    style?: StyleProp<ViewStyle>;
+    variant?: keyof typeof VARIANTS;
+    accessibilityLabel?: string;
+    accessibilityRole?: AccessibilityProps["accessibilityRole"];
+} & Omit<React.ComponentProps<typeof Pressable>, "style" | "children">;
 
-export const Button = forwardRef<View, ButtonProps>(({ title, ...touchableProps }, ref) => {
-  return (
-    <TouchableOpacity ref={ref} {...touchableProps} style={[styles.button, touchableProps.style]}>
-      <Text style={styles.buttonText}>{title}</Text>
-    </TouchableOpacity>
-  );
-});
+export function Button({
+    children,
+    style,
+    variant = "primary",
+    accessibilityLabel,
+    accessibilityRole = "button",
+    ...props
+}: ButtonProps) {
+    const colorScheme = useColorScheme();
+    const theme = THEME[colorScheme || 'light'];
 
-Button.displayName = 'Button';
+    // Memoize style calculation
+    const buttonStyle = useMemo(() => {
+        let resolvedStyle: any[] = [];
+        if (Array.isArray(style)) {
+            resolvedStyle = style.filter(s => typeof s !== 'function');
+        } else if (style && typeof style !== 'function') {
+            resolvedStyle = [style];
+        }
+        // Variant support (currently only primary, but extendable)
+        const variantStyle = variant && VARIANTS[variant] ? VARIANTS[variant](theme) : {};
+        return [
+            { backgroundColor: theme.button, ...styles.button },
+            variantStyle,
+            ...resolvedStyle,
+        ];
+    }, [style, theme, variant]);
 
-const styles = StyleSheet.create({
-  button: {
-    alignItems: 'center',
-    backgroundColor: '#6366F1',
-    borderRadius: 24,
-    elevation: 5,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: {
-      height: 2,
-      width: 0,
+    return (
+        <Pressable
+            style={({ pressed }) => [
+                ...buttonStyle,
+                pressed && { opacity: 0.7 }, // Touch feedback
+            ]}
+            accessibilityLabel={accessibilityLabel}
+            accessibilityRole={accessibilityRole}
+            {...props}
+        >
+            {children}
+        </Pressable>
+    );
+}
+
+export const styles = StyleSheet.create({
+    wrapper: {
+        width: "100%",
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: 24,
+        height: 48,
     },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-  },
-  buttonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
-    textAlign: 'center',
-  },
+    button: {
+        width: "100%",
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: 24,
+        height: "100%",
+    }
 });
