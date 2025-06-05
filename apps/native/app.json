@@ -3,7 +3,6 @@
     "name": "canvas-ios",
     "slug": "canvas-ios",
     "version": "1.0.0",
-
     "scheme": "canvas-ios",
     "web": {
       "bundler": "metro",
@@ -21,28 +20,34 @@
     ],
     "experiments": {
       "typedRoutes": true,
-
       "tsconfigPaths": true
     },
-
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-
     "userInterfaceStyle": "light",
-
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.izzehaucc.canvasios"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
+      },
+      "package": "com.izzehaucc.canvasios"
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "12eda42e-ac2a-421a-ab20-976cf60c39e1"
       }
     }
   }
