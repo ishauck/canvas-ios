@@ -5,10 +5,12 @@ import { useTheme } from "@/hooks/use-theme";
 import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState, useEffect, useRef } from "react";
-import { View, Text, Pressable, TouchableOpacity, Animated, Keyboard, Platform, Easing, TouchableWithoutFeedback } from "react-native";
+import { View, Text, Pressable, TouchableOpacity, Animated, Keyboard, Platform, Easing, TouchableWithoutFeedback, ActivityIndicator } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { verifyCanvas } from "../../lib/verify-canvas";
 import { Button, ButtonWrapper } from "@/components/Button";
+import { useGlobalStore } from "@/store/data";
+import { saveAccountKey } from "@/lib/auth";
 
 export default function Input() {
     const theme = useTheme();
@@ -18,6 +20,7 @@ export default function Input() {
     const { domain } = useLocalSearchParams();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const { setCurrentAccount, addAccount, accounts } = useGlobalStore();
 
     useEffect(() => {
         const keyboardShow = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
@@ -123,8 +126,18 @@ export default function Input() {
                                 setError(null);
                                 try {
                                     if (!domain) throw new Error('No domain provided');
-                                    await verifyCanvas(domain as string, accessToken);
-                                    router.replace('/(app)');
+                                    const accountIndex = accounts.length;
+                                    const account = await verifyCanvas(domain as string, accessToken);
+                                    setCurrentAccount(accountIndex);
+                                    saveAccountKey(accountIndex.toString(), accessToken);
+                                    addAccount({
+                                        id: account.id.toString(),
+                                        domain: domain as string,
+                                        name: account.name,
+                                        avatar: account.avatar_url,
+                                        email: account.email,
+                                    });
+                                    router.replace('/app');
                                 } catch {
                                     setError('Invalid token or network error.');
                                 } finally {
@@ -135,7 +148,11 @@ export default function Input() {
                             accessibilityLabel="Continue"
                             style={{ width: '100%', borderRadius: 12, paddingVertical: 14 }}
                         >
-                            <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>{loading ? 'Verifying...' : 'Continue'}</Text>
+                            {loading ? (
+                                <ActivityIndicator size="small" color={theme.buttonText} />
+                            ) : (
+                                <Text style={{ color: theme.buttonText, fontSize: 16, fontWeight: '600' }}>Continue</Text>
+                            )}
                         </Button>
                     </ButtonWrapper>
                 </Animated.View>

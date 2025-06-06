@@ -17,7 +17,7 @@ export const THEME = {
     muted: 'gray',
   },
   dark: {
-    background: '#171717',
+    background: '#0a0a0a',
     surface: '#232323',
     text: '#FFF',
     label: '#EEE',

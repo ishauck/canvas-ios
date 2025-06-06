@@ -8,7 +8,9 @@ import { ButtonWrapper, Button as RNButton } from "@/components/Button";
 import { useForm } from '@tanstack/react-form';
 import { z } from 'zod';
 import * as Haptics from 'expo-haptics';
-import { router, useLocalSearchParams } from "expo-router";
+import { Redirect, router, useLocalSearchParams } from "expo-router";
+import { useTheme } from "@/hooks/use-theme";
+import { useGlobalStore } from "@/store/data";
 
 export default function Home() {
   const safeAreaInsets = useSafeAreaInsets();
@@ -84,6 +86,12 @@ export default function Home() {
       hideSub.remove();
     };
   }, [keyboardOffset]);
+
+  const { accounts } = useGlobalStore();
+
+  if (accounts.length > 0) {
+    return <Redirect href="/app" />;
+  }
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
