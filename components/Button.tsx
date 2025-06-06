@@ -19,6 +19,7 @@ export function ButtonWrapper({ children, ...props }: ButtonWrapperProps) {
         <SquircleView {...props} style={[styles.wrapper, { backgroundColor: theme.button }, props.style]} squircleParams={{
             cornerRadius: 18,
             cornerSmoothing: 1,
+            fillColor: theme.button,
         }}>
             {children}
         </SquircleView>

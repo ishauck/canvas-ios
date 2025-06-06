@@ -3,16 +3,50 @@ import { useEffect, useRef } from "react";
 import { CanvasLogo } from "@/components/CanvasLogo";
 import { CANVAS_RED, THEME } from "@/constants/color";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import TextInput from "@/components/TextInput";
+import TextInput, { TextInputHandle } from "@/components/TextInput";
 import { ButtonWrapper, Button as RNButton } from "@/components/Button";
+import { useForm } from '@tanstack/react-form';
+import { z } from 'zod';
+import * as Haptics from 'expo-haptics';
 
 export default function Home() {
   const safeAreaInsets = useSafeAreaInsets();
   const colorScheme = useColorScheme();
   const theme = THEME[colorScheme || 'light'];
+  const domainInputRef = useRef<TextInputHandle>(null);
 
   // Animated value for keyboard offset
   const keyboardOffset = useRef(new Animated.Value(0)).current;
+
+  // TanStack Form setup
+  const domainSchema = z.object({
+    domain: z
+      .string()
+      .min(1, 'Domain is required')
+      .regex(
+        /^([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$/,
+        'Must be a valid Canvas domain (e.g., xyz.instructure.com)'
+      ),
+  });
+
+  const form = useForm({
+    defaultValues: { domain: '' },
+    onSubmit: async ({ value }) => {
+      // TODO: handle login logic here
+      alert('Domain: ' + value.domain);
+    },
+    validators: {
+      onSubmit: ({ value }) => {
+        const result = domainSchema.safeParse(value);
+        if (!result.success) {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+          domainInputRef.current?.shake();
+          return result.error.message;
+        }
+        return true;
+      },
+    },
+  });
 
   useEffect(() => {
     const keyboardShow = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
@@ -60,16 +94,33 @@ export default function Home() {
             </View>
             <Text style={{ fontSize: 32, fontWeight: 'bold', marginVertical: 15, color: theme.text }}>Log In</Text>
             <View style={{ width: 300, flexDirection: 'column', gap: 10 }}>
-              <TextInput
-                placeholder="xyz.instructure.com"
-                keyboardType="url"
-                containerStyle={{ width: "100%", height: 48 }}
-                inputStyle={{ backgroundColor: theme.surface, color: theme.text }} />
-              <ButtonWrapper>
-                <RNButton>
-                  <Text style={{ color: theme.buttonText, fontSize: 16, fontWeight: "bold" }}>Continue</Text>
-                </RNButton>
-              </ButtonWrapper>
+              <form.Field name="domain">
+                {(field) => (
+                  <TextInput
+                    placeholder="xyz.instructure.com"
+                    keyboardType="url"
+                    containerStyle={{ width: "100%", height: 48 }}
+                    inputStyle={{ backgroundColor: theme.surface, color: theme.text }}
+                    value={field.state.value}
+                    onChangeText={field.handleChange}
+                    onBlur={field.handleBlur}
+                    ref={domainInputRef}
+                  />
+                )}
+              </form.Field>
+              <form.Subscribe selector={s => [s.canSubmit, s.isSubmitting]}>
+                {([_, isSubmitting]) => (
+                  <ButtonWrapper>
+                    <RNButton
+                      onPress={() => form.handleSubmit()}
+                      disabled={isSubmitting}
+                      accessibilityLabel="Continue"
+                    >
+                      <Text style={{ color: theme.buttonText, fontSize: 16, fontWeight: "bold" }}>{isSubmitting ? '...' : 'Continue'}</Text>
+                    </RNButton>
+                  </ButtonWrapper>
+                )}
+              </form.Subscribe>
             </View>
           </View>
         </Animated.View>
