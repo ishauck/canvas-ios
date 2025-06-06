@@ -8,6 +8,7 @@ import { ButtonWrapper, Button as RNButton } from "@/components/Button";
 import { useForm } from '@tanstack/react-form';
 import { z } from 'zod';
 import * as Haptics from 'expo-haptics';
+import { router } from "expo-router";
 
 export default function Home() {
   const safeAreaInsets = useSafeAreaInsets();
@@ -32,8 +33,12 @@ export default function Home() {
   const form = useForm({
     defaultValues: { domain: '' },
     onSubmit: async ({ value }) => {
-      // TODO: handle login logic here
-      alert('Domain: ' + value.domain);
+      router.push({
+        pathname: '/access',
+        params: {
+          domain: value.domain,
+        }
+      });
     },
     validators: {
       onSubmit: ({ value }) => {
@@ -99,6 +104,8 @@ export default function Home() {
                   <TextInput
                     placeholder="xyz.instructure.com"
                     keyboardType="url"
+                    autoCapitalize="none"
+                    autoCorrect={false}
                     containerStyle={{ width: "100%", height: 48 }}
                     inputStyle={{ backgroundColor: theme.surface, color: theme.text }}
                     value={field.state.value}
