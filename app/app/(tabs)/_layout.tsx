@@ -8,17 +8,8 @@ import Header from "@/components/app/Header";
 import useBrandVariables from "@/hooks/use-brand-variables";
 import { opacity } from "react-native-reanimated/lib/typescript/Colors";
 import type { BottomTabBarButtonProps } from '@react-navigation/bottom-tabs';
-
-// Utility to darken a hex color by a percentage
-function darkenHexColor(hex: string, percent: number): string {
-    let r = parseInt(hex.slice(1, 3), 16);
-    let g = parseInt(hex.slice(3, 5), 16);
-    let b = parseInt(hex.slice(5, 7), 16);
-    r = Math.floor(r * (1 - percent));
-    g = Math.floor(g * (1 - percent));
-    b = Math.floor(b * (1 - percent));
-    return `#${r.toString(16).padStart(2, "0")}${g.toString(16).padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
-}
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import * as Haptics from 'expo-haptics';
 
 // Custom tab bar button with animated scale
 function LargeTabBarButton({ children, onPress, accessibilityState }: BottomTabBarButtonProps) {
@@ -40,9 +31,14 @@ function LargeTabBarButton({ children, onPress, accessibilityState }: BottomTabB
         }).start();
     };
 
+    const handlePress = (event: any) => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        if (onPress) onPress(event);
+    };
+
     return (
         <Pressable
-            onPress={onPress}
+            onPress={handlePress}
             onPressIn={handlePressIn}
             onPressOut={handlePressOut}
             style={{ flex: 1 }}
@@ -52,8 +48,8 @@ function LargeTabBarButton({ children, onPress, accessibilityState }: BottomTabB
                 style={{
                     alignItems: "center",
                     justifyContent: "center",
-                    minHeight: 60, // Increase height
-                    minWidth: 80,  // Increase width
+                    height: 20, // Reduced height
+                    minWidth: 60,  // Reduced width
                     transform: [{ scale }],
                 }}
             >
@@ -68,18 +64,19 @@ export default function Layout() {
     const theme = useTheme();
     const colorScheme = useColorScheme();
     const brandVariables = useBrandVariables();
+    const safeAreaInsets = useSafeAreaInsets();
     const brand = brandVariables.data;
 
     // Tab bar active/inactive tint from brand variables if available
     const tabBarActiveTintColor = useMemo(() => {
-        return theme.text;
-    }, [theme.text]);
+        return colorScheme === 'dark' ? '#fff' : '#212121';
+    }, [colorScheme]);
 
     const tabBarInactiveTintColor = useMemo(() => {
-        return colorScheme === 'dark' ? '#272727' : theme.text;
-    }, [colorScheme, theme.text]);
+        return colorScheme === 'dark' ? '#272727' : '#4a4a4a';
+    }, [colorScheme]);
 
-    // Extracted styles for reuse and readability
+    // Reduced height for a more compact tab bar
     const tabBarStyle = useMemo(() => ({
         backgroundColor: theme.background,
         borderTopWidth: 0,
@@ -87,7 +84,9 @@ export default function Layout() {
         flexDirection: 'row' as const,
         justifyContent: 'space-between' as const,
         alignItems: 'center' as const,
-    }), [theme.background]);
+        height: 20 + safeAreaInsets.bottom, // Set a smaller fixed height
+        paddingBottom: safeAreaInsets.bottom,
+    }), [theme.background, safeAreaInsets.bottom]);
 
     const emptyAccountsStyle = useMemo(() => ({
         backgroundColor: theme.background,
@@ -124,7 +123,7 @@ export default function Layout() {
                 tabBarActiveTintColor,
                 tabBarInactiveTintColor,
                 tabBarIconStyle: { marginBottom: 0 },
-                tabBarLabel: '',
+                tabBarShowLabel: false,
                 header: () => <Header />, // Custom header
             }}
         >
@@ -137,6 +136,10 @@ export default function Layout() {
             />
             <Tabs.Screen name="courses" options={{
                 tabBarIcon: ({ color, size }) => <Ionicons name="book" color={color} size={size} />,
+                tabBarButton: (props) => <LargeTabBarButton {...props} />,
+            }} />
+            <Tabs.Screen name="settings" options={{
+                tabBarIcon: ({ color, size }) => <Ionicons name="settings" color={color} size={size} />,
                 tabBarButton: (props) => <LargeTabBarButton {...props} />,
             }} />
         </Tabs>

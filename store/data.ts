@@ -14,6 +14,7 @@ type GlobalActions = {
   setCurrentAccount: (account: number) => void;
   addAccount: (account: Account) => void;
   removeAccount: (account: Account) => void;
+  setAccounts: (accounts: Account[]) => void;
   setBrandVariable: (domain: string, value: BrandVariables) => void;
   setBrandVariables: (value: Record<string, BrandVariables>) => void;
   removeBrandVariables: (domain: string) => void;
@@ -31,6 +32,7 @@ export const useGlobalStore = create<GlobalStore>()(
       addAccount: (account: Account) => set({ accounts: [...get().accounts, account] }),
       removeAccount: (account: Account) =>
         set({ accounts: get().accounts.filter((a) => a.id !== account.id) }),
+      setAccounts: (accounts: Account[]) => set({ accounts }),
       setBrandVariable: (domain: string, value: BrandVariables) =>
         set({
           brandVariables: { ...get().brandVariables, [domain]: value },

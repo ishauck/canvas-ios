@@ -18,7 +18,7 @@ export const THEME = {
   },
   dark: {
     background: '#0a0a0a',
-    surface: '#232323',
+    surface: '#121212',
     text: '#FFF',
     label: '#EEE',
     border: '#333',

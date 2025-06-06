@@ -1,6 +1,7 @@
 export type AccountBasic = {
     id: string;
     domain: string;
+    key: string;
 };
 
 export type Account = AccountBasic & {

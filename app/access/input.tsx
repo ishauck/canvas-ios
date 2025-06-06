@@ -5,12 +5,11 @@ import { useTheme } from "@/hooks/use-theme";
 import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState, useEffect, useRef } from "react";
-import { View, Text, Pressable, TouchableOpacity, Animated, Keyboard, Platform, Easing, TouchableWithoutFeedback, ActivityIndicator } from "react-native";
+import { View, Text, Pressable, Animated, Keyboard, Platform, Easing, TouchableWithoutFeedback, ActivityIndicator } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { verifyCanvas } from "../../lib/verify-canvas";
 import { Button, ButtonWrapper } from "@/components/Button";
 import { useGlobalStore } from "@/store/data";
-import { saveAccountKey } from "@/lib/auth";
 
 export default function Input() {
     const theme = useTheme();
@@ -129,13 +128,13 @@ export default function Input() {
                                     const accountIndex = accounts.length;
                                     const account = await verifyCanvas(domain as string, accessToken);
                                     setCurrentAccount(accountIndex);
-                                    saveAccountKey(accountIndex.toString(), accessToken);
                                     addAccount({
                                         id: account.id.toString(),
                                         domain: domain as string,
                                         name: account.name,
                                         avatar: account.avatar_url,
                                         email: account.email,
+                                        key: accessToken,
                                     });
                                     router.replace('/app');
                                 } catch {
