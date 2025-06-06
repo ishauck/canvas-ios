@@ -8,13 +8,14 @@ import { ButtonWrapper, Button as RNButton } from "@/components/Button";
 import { useForm } from '@tanstack/react-form';
 import { z } from 'zod';
 import * as Haptics from 'expo-haptics';
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 
 export default function Home() {
   const safeAreaInsets = useSafeAreaInsets();
   const colorScheme = useColorScheme();
   const theme = THEME[colorScheme || 'light'];
   const domainInputRef = useRef<TextInputHandle>(null);
+  const { domain } = useLocalSearchParams();
 
   // Animated value for keyboard offset
   const keyboardOffset = useRef(new Animated.Value(0)).current;
@@ -31,8 +32,10 @@ export default function Home() {
   });
 
   const form = useForm({
-    defaultValues: { domain: '' },
+    defaultValues: { domain: domain || '' },
     onSubmit: async ({ value }) => {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      Keyboard.dismiss();
       router.push({
         pathname: '/access',
         params: {
@@ -48,7 +51,7 @@ export default function Home() {
           domainInputRef.current?.shake();
           return result.error.message;
         }
-        return true;
+        return undefined;
       },
     },
   });
@@ -108,7 +111,7 @@ export default function Home() {
                     autoCorrect={false}
                     containerStyle={{ width: "100%", height: 48 }}
                     inputStyle={{ backgroundColor: theme.surface, color: theme.text }}
-                    value={field.state.value}
+                    value={field.state.value as string}
                     onChangeText={field.handleChange}
                     onBlur={field.handleBlur}
                     ref={domainInputRef}
