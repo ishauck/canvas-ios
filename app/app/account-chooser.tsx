@@ -1,10 +1,46 @@
 import { useTheme } from "@/hooks/use-theme";
-import { View, Text, SafeAreaView, FlatList, TouchableOpacity } from "react-native";
+import { View, Text, SafeAreaView, FlatList, TouchableOpacity, Image, StyleSheet } from "react-native";
 import { CanvasLogo } from "@/components/CanvasLogo";
 import { CANVAS_RED } from "@/constants/color";
 import { useGlobalStore } from "@/store/data";
 import { Button, ButtonWrapper } from "@/components/Button";
 import { Redirect, router } from "expo-router";
+import useBrandVariables from "@/hooks/use-brand-variables";
+
+// AccountAvatar component
+function AccountAvatar({ avatar, domain, size = 40 }: { avatar?: string; domain: string; size?: number }) {
+    const { data: brandVars } = useBrandVariables();
+    // Try to get the brand logo for the domain
+    const brandLogo = brandVars?.["ic-brand-msapplication-tile-wide"];
+    const avatarStyle = {
+        backgroundColor: '#ccc',
+    };
+    const brandBubbleStyle = {
+        position: 'absolute' as const,
+        backgroundColor: '#fff',
+        borderWidth: 1,
+        borderColor: '#eee',
+        alignItems: 'center' as const,
+        justifyContent: 'center' as const,
+        overflow: 'hidden' as const,
+    };
+    return (
+        <View style={{ width: size, height: size }}>
+            {avatar ? (
+                <Image source={{ uri: avatar }} style={[avatarStyle, { width: size, height: size, borderRadius: size / 2 }]} />
+            ) : (
+                <View style={[avatarStyle, { width: size, height: size, borderRadius: size / 2, backgroundColor: '#ccc', alignItems: 'center', justifyContent: 'center' }]}> 
+                    <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: size / 2 }}>{domain[0]?.toUpperCase() || '?'}</Text>
+                </View>
+            )}
+            {brandLogo && (
+                <View style={[brandBubbleStyle, { width: size / 2.2, height: size / 2.2, borderRadius: size / 4, right: -2, bottom: -2 }]}> 
+                    <Image source={{ uri: brandLogo }} style={{ width: '100%', height: '100%', borderRadius: size / 4 }} resizeMode="contain" />
+                </View>
+            )}
+        </View>
+    );
+}
 
 export default function AccountChooser() {
     const theme = useTheme();
@@ -48,13 +84,19 @@ export default function AccountChooser() {
                                 display: 'flex',
                                 flexDirection: 'row',
                                 alignItems: 'center',
-                                justifyContent: 'space-between',
+                                justifyContent: 'flex-start',
+                                gap: 12,
                             }}
                             onPress={() => {
                                 setCurrentAccount(index);
                                 router.replace('/app/(tabs)');
                             }}>
-                                <Text style={{ color: theme.text, fontSize: 24, fontWeight: 'bold', marginBottom: 8, textAlign: 'center' }}>{item.name}</Text>
+                                <AccountAvatar avatar={item.avatar} domain={item.domain} size={48} />
+                                <View style={{ flex: 1, marginLeft: 12 }}>
+                                    <Text style={{ color: theme.text, fontSize: 18, fontWeight: 'bold' }}>{item.name}</Text>
+                                    <Text style={{ color: theme.muted ?? '#888', fontSize: 14 }}>{item.email}</Text>
+                                    <Text style={{ color: theme.muted ?? '#888', fontSize: 13, opacity: 0.7 }}>{item.domain}</Text>
+                                </View>
                             </TouchableOpacity>
                         )}
                     />
