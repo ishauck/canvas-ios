@@ -4,10 +4,11 @@ import getBrandVariables from '@/lib/brand-variables';
 import { useGlobalStore } from '@/store/data';
 import { useEffect } from 'react';
 
-export default function useBrandVariables() {
+export default function useBrandVariables(domain?: string) {
   const setBrandVariable = useGlobalStore((state) => state.setBrandVariable);
   const brandVariables = useGlobalStore((state) => state.brandVariables);
-  const { domain } = useClient();
+  let { domain: currentDomain } = useClient();
+  domain = domain || currentDomain;
 
   const res = useQuery({
     queryKey: ['brand-variables', domain],

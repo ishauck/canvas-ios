@@ -31,7 +31,7 @@ export const useGlobalStore = create<GlobalStore>()(
       setCurrentAccount: (account: number) => set({ currentAccount: account }),
       addAccount: (account: Account) => set({ accounts: [...get().accounts, account] }),
       removeAccount: (account: Account) =>
-        set({ accounts: get().accounts.filter((a) => a.id !== account.id) }),
+        set({ accounts: get().accounts.filter((a) => a.id !== account.id && a.domain !== account.domain) }),
       setAccounts: (accounts: Account[]) => set({ accounts }),
       setBrandVariable: (domain: string, value: BrandVariables) =>
         set({
