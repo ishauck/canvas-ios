@@ -3,4 +3,5 @@ export type Account = {
     domain: string;
     key: string;
     name: string;
+    avatar: string;
 };

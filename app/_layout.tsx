@@ -7,6 +7,7 @@ export const queryClient = new QueryClient();
 
 export default function Layout() {
   const { accounts } = useGlobalStore();
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <QueryClientProvider client={queryClient}>

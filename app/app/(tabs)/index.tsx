@@ -1,13 +1,14 @@
 import { useTheme } from "@/hooks/use-theme";
 import useUser from "@/hooks/use-user";
 import { View, Image, Text, TouchableOpacity, ActivityIndicator } from "react-native";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { FlashList } from "@shopify/flash-list";
 import useFeed from "@/hooks/use-feed";
 import useColors from "@/hooks/use-colors";
 import { CanvasActivityStreamItem } from "@/services/canvas/get-feed";
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import useCourses from "@/hooks/use-courses";
+import * as Haptics from "expo-haptics";
 
 function getTypeIcon(type: string) {
   switch (type) {

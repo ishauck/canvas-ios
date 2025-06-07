@@ -53,6 +53,7 @@ export default function AddAccount() {
                     domain: value.domain,
                     name: account.name,
                     key: value.token,
+                    avatar: account.avatar_url,
                 });
                 Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
                 Keyboard.dismiss();

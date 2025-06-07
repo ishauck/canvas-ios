@@ -39,4 +39,6 @@ export type CanvasUser = {
     lti_guid: string;
     // The state of the account. Can be 'active' or 'deleted'.
     workflow_state: 'active' | 'deleted';
+    // The URL of the account's avatar
+    avatar_url: string;
   }
