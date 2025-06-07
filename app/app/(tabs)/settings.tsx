@@ -1,7 +1,5 @@
 import { useTheme } from "@/hooks/use-theme";
 import { View, Text, Image, StyleSheet } from "react-native";
-import Constants from "expo-constants";
-import { useGlobalStore } from "@/store/data";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import type { ViewStyle } from 'react-native';
@@ -10,7 +8,6 @@ import { Button, ButtonWrapper } from "@/components/Button";
 
 export default function Settings() {
   const theme = useTheme();
-  const { accounts, currentAccount, setCurrentAccount } = useGlobalStore();
   const version = Application.nativeApplicationVersion || "Unknown";
 
   // Move theme-dependent styles here
@@ -26,22 +23,10 @@ export default function Settings() {
     borderWidth: 1,
     borderColor: theme.border,
   };
-  const manageButtonStyle: ViewStyle = {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.background,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: theme.primary,
-    marginTop: 4,
-    alignSelf: 'flex-start',
-  };
 
   return (
     <View style={{ backgroundColor: theme.background, flex: 1, padding: 24 }}>
-      <Text style={{ fontSize: 28, fontWeight: "bold", marginBottom: 24 }}>Settings</Text>
+      <Text style={{ fontSize: 28, fontWeight: "bold", marginBottom: 24, color: theme.text }}>Settings</Text>
       {/* App Version Card */}
       <View style={cardStyle}>
         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
@@ -70,6 +55,9 @@ export default function Settings() {
           </Button>
         </ButtonWrapper>
       </View>
+      <Text style={{ fontSize: 12, color: theme.muted, marginTop: 12, textAlign: 'center' }}>
+        Canvas is a product of Instructure, Inc., and this app is not affiliated with Instructure, Inc. nor Canvas.
+      </Text>
     </View>
   );
 }

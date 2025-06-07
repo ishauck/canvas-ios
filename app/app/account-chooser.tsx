@@ -50,9 +50,6 @@ function AccountAvatar({ avatar, domain, size = 40 }: { avatar?: string; domain:
 
 function RightAction(prog: SharedValue<number>, drag: SharedValue<number>, onDelete: () => void) {
     const styleAnimation = useAnimatedStyle(() => {
-        console.log('showRightProgress:', prog.value);
-        console.log('appliedTranslation:', drag.value);
-
         return {
             transform: [{ translateX: drag.value + 100 }],
             height: '100%',
@@ -73,7 +70,7 @@ function RightAction(prog: SharedValue<number>, drag: SharedValue<number>, onDel
     return (
         <Reanimated.View style={styleAnimation}>
             <TouchableOpacity
-                style={{ width: 100, height: "100%", backgroundColor: 'red', alignItems: 'center', justifyContent: 'center' }}
+                style={{ width: 100, flex: 1, height: "100%", backgroundColor: 'red', alignItems: 'center', justifyContent: 'center' }}
                 onPress={handleDelete}
             >
                 <Ionicons name="trash" size={24} color="white" />
@@ -154,6 +151,7 @@ export default function AccountChooser() {
                         gap: 12,
                     }}
                     onPress={() => {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                         setCurrentAccount(index);
                         router.replace('/app/(tabs)');
                     }}

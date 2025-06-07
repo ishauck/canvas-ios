@@ -1,8 +1,7 @@
-import { View, Text, useColorScheme, Platform, TouchableWithoutFeedback, Keyboard, Animated, Easing, Pressable } from "react-native";
-import { useEffect, useRef } from "react";
+import { View, Text, useColorScheme, Platform, TouchableWithoutFeedback, Keyboard, Animated, Easing, Pressable, ActivityIndicator } from "react-native";
+import { useEffect, useRef, useState } from "react";
 import { CanvasLogo } from "@/components/CanvasLogo";
 import { CANVAS_RED, THEME } from "@/constants/color";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import TextInput, { TextInputHandle } from "@/components/TextInput";
 import { ButtonWrapper, Button as RNButton } from "@/components/Button";
 import { useForm } from '@tanstack/react-form';
@@ -11,14 +10,19 @@ import * as Haptics from 'expo-haptics';
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@/hooks/use-theme";
+import { verifyCanvas } from "@/lib/verify-canvas";
+import { useGlobalStore } from "@/store/data";
 
 export default function AddAccount() {
-    const safeAreaInsets = useSafeAreaInsets();
     const colorScheme = useColorScheme();
     const theme = THEME[colorScheme || 'light'];
     const domainInputRef = useRef<TextInputHandle>(null);
+    const tokenInputRef = useRef<TextInputHandle>(null);
     const keyboardOffset = useRef(new Animated.Value(0)).current;
     const appTheme = useTheme();
+    const { setCurrentAccount, addAccount, accounts } = useGlobalStore();
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     // Domain validation schema
     const domainSchema = z.object({
@@ -29,20 +33,36 @@ export default function AddAccount() {
                 /^([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$/,
                 'Must be a valid Canvas domain (e.g., xyz.instructure.com)'
             ),
+        token: z
+            .string()
+            .min(1, 'Token is required'),
     });
 
     // Form setup
     const form = useForm({
-        defaultValues: { domain: '' },
+        defaultValues: { domain: '', token: '' },
         onSubmit: async ({ value }) => {
-            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-            Keyboard.dismiss();
-            router.push({
-                pathname: '/access',
-                params: {
+            setLoading(true);
+            setError(null);
+            try {
+                const accountIndex = accounts.length;
+                const account = await verifyCanvas(value.domain, value.token);
+                setCurrentAccount(accountIndex);
+                addAccount({
+                    id: account.id.toString(),
                     domain: value.domain,
-                },
-            });
+                    name: account.name,
+                    key: value.token,
+                });
+                Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                Keyboard.dismiss();
+                router.replace('/app');
+            } catch {
+                setError('Invalid token or network error.');
+                Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+            } finally {
+                setLoading(false);
+            }
         },
         validators: {
             onSubmit: ({ value }) => {
@@ -87,7 +107,7 @@ export default function AddAccount() {
 
     return (
         <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-            <View style={{ flex: 1, backgroundColor: theme.background, paddingTop: safeAreaInsets.top, paddingHorizontal: 16 }}>
+            <View style={{ flex: 1, backgroundColor: theme.background }}>
                 <Animated.View
                     style={{
                         flex: 1,
@@ -121,16 +141,44 @@ export default function AddAccount() {
                                 />
                             )}
                         </form.Field>
+                        <form.Field name="token">
+                            {(field) => (
+                                <TextInput
+                                    placeholder="Canvas API Token"
+                                    secureTextEntry={true}
+                                    keyboardType="default"
+                                    autoCapitalize="none"
+                                    autoCorrect={false}
+                                    containerStyle={{ width: "100%", height: 48 }}
+                                    inputStyle={{ backgroundColor: theme.surface, color: theme.text }}
+                                    value={field.state.value as string}
+                                    onChangeText={(text) => {
+                                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                                        field.handleChange(text);
+                                    }}
+                                    onBlur={field.handleBlur}
+                                    ref={tokenInputRef}
+                                    error={field.state.meta.errors?.[0]}
+                                />
+                            )}
+                        </form.Field>
                         <form.Subscribe selector={s => [s.canSubmit, s.isSubmitting]}>
                             {([canSubmit, isSubmitting]) => (
                                 <ButtonWrapper>
                                     <RNButton
                                         onPress={() => form.handleSubmit()}
-                                        disabled={isSubmitting || !canSubmit}
+                                        disabled={isSubmitting || !canSubmit || loading}
                                         accessibilityLabel="Continue"
                                     >
-                                        <Text style={{ color: theme.buttonText, fontSize: 16, fontWeight: "bold" }}>{isSubmitting ? '...' : 'Continue'}</Text>
+                                        {loading ? (
+                                            <ActivityIndicator size="small" color={theme.buttonText} />
+                                        ) : (
+                                            <Text style={{ color: theme.buttonText, fontSize: 16, fontWeight: "bold" }}>{isSubmitting ? '...' : 'Continue'}</Text>
+                                        )}
                                     </RNButton>
+                                    {error && (
+                                        <Text style={{ color: appTheme.error || '#d32f2f', marginTop: 6, fontSize: 14, textAlign: 'center' }}>{error}</Text>
+                                    )}
                                 </ButtonWrapper>
                             )}
                         </form.Subscribe>

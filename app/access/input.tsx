@@ -132,8 +132,6 @@ export default function Input() {
                                         id: account.id.toString(),
                                         domain: domain as string,
                                         name: account.name,
-                                        avatar: account.avatar_url,
-                                        email: account.email,
                                         key: accessToken,
                                     });
                                     router.replace('/app');
