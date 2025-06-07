@@ -94,7 +94,6 @@ export default function AccountChooser() {
                                 <AccountAvatar avatar={item.avatar} domain={item.domain} size={48} />
                                 <View style={{ flex: 1, marginLeft: 12 }}>
                                     <Text style={{ color: theme.text, fontSize: 18, fontWeight: 'bold' }}>{item.name}</Text>
-                                    <Text style={{ color: theme.muted ?? '#888', fontSize: 14 }}>{item.email}</Text>
                                     <Text style={{ color: theme.muted ?? '#888', fontSize: 13, opacity: 0.7 }}>{item.domain}</Text>
                                 </View>
                             </TouchableOpacity>
@@ -103,7 +102,6 @@ export default function AccountChooser() {
                 </View>
                 <ButtonWrapper>
                     <Button accessibilityLabel="Continue" accessibilityRole="button" onPress={() => {
-                        setAccounts([]);
                         router.replace('/');
                     }}>
                         <Text style={{ color: theme.buttonText, fontSize: 16, fontWeight: 'bold' }}>Clear Accounts</Text>

@@ -77,10 +77,10 @@ export default function Courses() {
           <Text style={{ color: theme.muted, fontSize: 14, textAlign: 'center' }}>{feed.error?.message || 'Failed to load activity.'}</Text>
         </View>
       )}
-      {/* Activity List with Pull-to-Refresh */}
+      {/* Activity List with Pull-to-Refresh and Infinite Scroll */}
       {!feed.isLoading && (
         <FlashList
-          data={feed.data}
+          data={feed.data?.pages.flatMap(page => page.items) || []}
           renderItem={({ item, index }: { item: CanvasActivityStreamItem, index: number }) => {
             const icon = getTypeIcon(item.type);
             const isUnread = item.read_state === false;
@@ -99,8 +99,8 @@ export default function Courses() {
                 elevation: 3,
                 borderTopLeftRadius: index === 0 ? 12 : 0,
                 borderTopRightRadius: index === 0 ? 12 : 0,
-                borderBottomLeftRadius: index === (feed.data?.length || 0) - 1 ? 12 : 0,
-                borderBottomRightRadius: index === (feed.data?.length || 0) - 1 ? 12 : 0,
+                borderBottomLeftRadius: index === ((feed.data?.pages.flatMap(page => page.items).length || 0) - 1) ? 12 : 0,
+                borderBottomRightRadius: index === ((feed.data?.pages.flatMap(page => page.items).length || 0) - 1) ? 12 : 0,
                 borderWidth: 1,
                 borderLeftWidth: 0,
                 borderRightWidth: 0,
@@ -129,6 +129,17 @@ export default function Courses() {
           estimatedItemSize={100}
           onRefresh={feed.refetch}
           refreshing={feed.isFetching}
+          onEndReached={() => {
+            if (feed.hasNextPage && !feed.isFetchingNextPage) {
+              feed.fetchNextPage();
+            }
+          }}
+          onEndReachedThreshold={0.2}
+          ListFooterComponent={feed.isFetchingNextPage ? (
+            <View style={{ alignItems: 'center', padding: 16 }}>
+              <ActivityIndicator size="small" color={theme.primary} />
+            </View>
+          ) : null}
         />
       )}
     </View >

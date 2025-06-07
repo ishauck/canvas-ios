@@ -68,24 +68,33 @@ export type CanvasActivityStreamItem =
     });
 
 /**
- * Fetches the activity stream (feed) for the current user from Canvas.
- * https://canvas.instructure.com/doc/api/users.html#method.users.activity_stream
+ * Fetches the activity stream (feed) for the current user from Canvas, with pagination support.
  * @param domain Canvas domain
  * @param token Canvas API token
- * @returns Promise resolving to an array of activity stream items
+ * @param nextUrl Optional: full URL for the next page (from Link header)
+ * @returns Promise resolving to { items, nextUrl }
  */
 export default async function getFeed(
   domain: string,
-  token: string
-): Promise<CanvasActivityStreamItem[]> {
-  const response = await fetch(
-    `https://${domain}/api/v1/users/self/activity_stream?only_active_courses=true`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
-  );
+  token: string,
+  nextUrl?: string
+): Promise<{ items: CanvasActivityStreamItem[]; nextUrl?: string }> {
+  const url = nextUrl || `https://${domain}/api/v1/users/self/activity_stream?only_active_courses=true&per_page=20`;
+  const response = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
   if (!response.ok) throw new Error(await response.text());
-  return response.json();
+  const items = await response.json();
+  // Parse Link header for next page
+  const link = response.headers.get('Link');
+  let nextPageUrl: string | undefined = undefined;
+  if (link) {
+    const match = link.match(/<([^>]+)>; rel="next"/);
+    if (match) {
+      nextPageUrl = match[1];
+    }
+  }
+  return { items, nextUrl: nextPageUrl };
 }
